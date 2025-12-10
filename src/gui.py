@@ -68,7 +68,7 @@ class ImageApp:
         body = tk.Frame(self.root)
         body.pack(fill=tk.BOTH, expand=True, padx=10, pady=6)
 
-        # Image display area
+        # Image display area (left side)
         img_frame = tk.Frame(body)
         img_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -83,9 +83,28 @@ class ImageApp:
         self.canvas_result.bind("<B1-Motion>", self.update_selection)
         self.canvas_result.bind("<ButtonRelease-1>", self.finish_selection)
 
-        # Right control panel
-        control = tk.Frame(body)
-        control.pack(side=tk.RIGHT, fill=tk.Y)
+        # Right control panel (scrollable column of sections)
+        control_container = tk.Frame(body)
+        control_container.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.control_canvas = tk.Canvas(
+            control_container,
+            highlightthickness=0,
+            borderwidth=0,
+        )
+        scrollbar = tk.Scrollbar(control_container, orient="vertical", command=self.control_canvas.yview)
+        self.control_canvas.configure(yscrollcommand=scrollbar.set)
+
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.control_canvas.pack(side=tk.LEFT, fill=tk.Y)
+
+        control = tk.Frame(self.control_canvas)
+        self.control_canvas.create_window((0, 0), window=control, anchor="nw")
+
+        def _update_scrollregion(event):
+            self.control_canvas.configure(scrollregion=self.control_canvas.bbox("all"))
+
+        control.bind("<Configure>", _update_scrollregion)
 
         self._section_basic(control)
         self._section_affine(control)
